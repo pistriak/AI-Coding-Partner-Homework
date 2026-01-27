@@ -35,8 +35,20 @@ public class TransactionController {
     }
 
     @GetMapping(path = "/transactions")
-    public List<Transaction> getAllTransactions() {
-        return service.getAllTransactions();
+    public ResponseEntity<?> getTransactions(
+            @RequestParam(required = false) String accountId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        try {
+            List<Transaction> result = service.listTransactions(accountId, type, from, to);
+            return ResponseEntity.ok(result);
+        } catch (ValidationException vex) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Validation failed");
+            error.put("details", vex.getDetails());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 
     @GetMapping(path = "/transactions/{id}")

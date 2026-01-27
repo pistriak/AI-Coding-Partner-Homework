@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.LinkedHashMap;
@@ -26,6 +28,102 @@ public class TransactionService {
 
     public Optional<Transaction> getTransactionById(String id) {
         return Optional.ofNullable(transactions.get(id));
+    }
+
+    public List<Transaction> listTransactions(String accountId, String type, String from, String to) {
+        List<Map<String, String>> details = new ArrayList<>();
+
+        // Validate optional filters
+        if (accountId != null && !ACCOUNT_PATTERN.matcher(accountId).matches()) {
+            details.add(Map.of("field", "accountId", "message", "Account must follow format ACC-XXXXX (alphanumeric)"));
+        }
+        String normalizedType = null;
+        if (type != null && !type.isBlank()) {
+            normalizedType = type.toLowerCase(Locale.ROOT);
+            if (!normalizedType.equals("deposit") && !normalizedType.equals("withdrawal") && !normalizedType.equals("transfer")) {
+                details.add(Map.of("field", "type", "message", "Type must be one of deposit | withdrawal | transfer"));
+            }
+        }
+
+        Instant fromInstant = null;
+        Instant toInstant = null;
+        try {
+            if (from != null && !from.isBlank()) {
+                fromInstant = parseDateOrInstantStart(from);
+            }
+            if (to != null && !to.isBlank()) {
+                toInstant = parseDateOrInstantEnd(to);
+            }
+            if (fromInstant != null && toInstant != null && fromInstant.isAfter(toInstant)) {
+                details.add(Map.of("field", "dateRange", "message", "'from' must be before or equal to 'to'"));
+            }
+        } catch (IllegalArgumentException ex) {
+            details.add(Map.of("field", "date", "message", ex.getMessage()));
+        }
+
+        if (!details.isEmpty()) {
+            throw new ValidationException(details);
+        }
+
+        List<Transaction> result = new ArrayList<>();
+        for (Transaction tx : transactions.values()) {
+            // Status filter (only completed by default for history semantics)
+            if (!"completed".equalsIgnoreCase(tx.getStatus())) {
+                continue;
+            }
+
+            // Account filter: involved as sender or recipient
+            if (accountId != null && !(accountId.equals(tx.getFromAccount()) || accountId.equals(tx.getToAccount()))) {
+                continue;
+            }
+
+            // Type filter
+            if (normalizedType != null) {
+                String txType = tx.getType() == null ? "" : tx.getType().toLowerCase(Locale.ROOT);
+                if (!txType.equals(normalizedType)) {
+                    continue;
+                }
+            }
+
+            // Date range filter (inclusive)
+            if (fromInstant != null && (tx.getTimestamp() == null || tx.getTimestamp().isBefore(fromInstant))) {
+                continue;
+            }
+            if (toInstant != null && (tx.getTimestamp() == null || tx.getTimestamp().isAfter(toInstant))) {
+                continue;
+            }
+
+            result.add(tx);
+        }
+        return result;
+    }
+
+    private Instant parseDateOrInstantStart(String input) {
+        // Accept ISO-8601 instant or a date (YYYY-MM-DD) treated as start of day UTC
+        try {
+            return Instant.parse(input);
+        } catch (Exception ignored) {
+        }
+        try {
+            LocalDate d = LocalDate.parse(input);
+            return d.atStartOfDay().toInstant(ZoneOffset.UTC);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid 'from' date; use ISO-8601 or YYYY-MM-DD");
+        }
+    }
+
+    private Instant parseDateOrInstantEnd(String input) {
+        // Accept ISO-8601 instant or a date (YYYY-MM-DD) treated as end of day UTC
+        try {
+            return Instant.parse(input);
+        } catch (Exception ignored) {
+        }
+        try {
+            LocalDate d = LocalDate.parse(input);
+            return d.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC).minusMillis(1);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid 'to' date; use ISO-8601 or YYYY-MM-DD");
+        }
     }
 
     public Transaction createTransaction(Transaction request) {
