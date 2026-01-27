@@ -5,11 +5,20 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class TransactionService {
     private final Map<String, Transaction> transactions = new LinkedHashMap<>();
+    private static final Pattern ACCOUNT_PATTERN = Pattern.compile("^ACC-[A-Za-z0-9]{5}$");
 
     public List<Transaction> getAllTransactions() {
         return new ArrayList<>(transactions.values());
@@ -20,9 +29,38 @@ public class TransactionService {
     }
 
     public Transaction createTransaction(Transaction request) {
-        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be a positive number");
+        List<Map<String, String>> details = new ArrayList<>();
+
+        BigDecimal amount = request.getAmount();
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            details.add(Map.of("field", "amount", "message", "Amount must be a positive number"));
+        } else if (amount.scale() > 2) {
+            details.add(Map.of("field", "amount", "message", "Amount must have at most 2 decimal places"));
         }
+
+        String from = request.getFromAccount();
+        String to = request.getToAccount();
+        if (from == null || !ACCOUNT_PATTERN.matcher(from).matches()) {
+            details.add(Map.of("field", "fromAccount", "message", "Account must follow format ACC-XXXXX (alphanumeric)"));
+        }
+        if (to == null || !ACCOUNT_PATTERN.matcher(to).matches()) {
+            details.add(Map.of("field", "toAccount", "message", "Account must follow format ACC-XXXXX (alphanumeric)"));
+        }
+
+        String currencyCode = request.getCurrency();
+        try {
+            if (currencyCode == null || currencyCode.isBlank()) {
+                throw new IllegalArgumentException("Invalid currency code");
+            }
+            Currency.getInstance(currencyCode.toUpperCase());
+        } catch (Exception e) {
+            details.add(Map.of("field", "currency", "message", "Invalid currency code"));
+        }
+
+        if (!details.isEmpty()) {
+            throw new ValidationException(details);
+        }
+
         Transaction tx = new Transaction();
         tx.setId(UUID.randomUUID().toString());
         tx.setFromAccount(request.getFromAccount());

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.example.demo.service.ValidationException;
 
 @RestController
 @RequestMapping("/")
@@ -25,10 +26,10 @@ public class TransactionController {
         try {
             Transaction created = service.createTransaction(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException ex) {
+        } catch (ValidationException vex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Validation failed");
-            error.put("details", List.of(Map.of("field", "amount", "message", ex.getMessage())));
+            error.put("details", vex.getDetails());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
