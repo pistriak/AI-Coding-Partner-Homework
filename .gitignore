@@ -40,7 +40,6 @@ htmlcov/
 
 # Build outputs
 *.class
-*.jar
 *.war
 *.ear
 
