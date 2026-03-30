@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/Ruslan Pistriak/Desktop/AI-Coding-Partner-Homework/homework-5"
+      ]
+    },
+    "jira": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-jira"
+      ],
+      "env": {
+        "JIRA_HOST": "${JIRA_HOST}",
+        "JIRA_EMAIL": "${JIRA_EMAIL}",
+        "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
+      }
+    },
+    "custom-lorem": {
+      "command": "python3.12",
+      "args": [
+        "/Users/Ruslan Pistriak/Desktop/AI-Coding-Partner-Homework/homework-5/custom-mcp-server/server.py"
+      ]
+    }
+  }
+}
+

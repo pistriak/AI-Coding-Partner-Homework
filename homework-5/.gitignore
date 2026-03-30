@@ -1,0 +1,5 @@
+custom-mcp-server/.venv/
+custom-mcp-server/__pycache__/
+**/__pycache__/
+*.pyc
+
