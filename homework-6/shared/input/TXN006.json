@@ -1,0 +1,21 @@
+{
+  "message_id": "dc019fc9-53d6-4995-b7a9-ef0b2ba9730a",
+  "timestamp": "2026-03-30T10:59:43.552967+00:00",
+  "source_agent": "integrator",
+  "target_agent": "transaction_validator",
+  "message_type": "transaction",
+  "data": {
+    "transaction_id": "TXN006",
+    "timestamp": "2026-03-16T10:05:00Z",
+    "source_account": "ACC-1006",
+    "destination_account": "ACC-7700",
+    "amount": "200.00",
+    "currency": "XYZ",
+    "transaction_type": "transfer",
+    "description": "Test payment",
+    "metadata": {
+      "channel": "online",
+      "country": "US"
+    }
+  }
+}

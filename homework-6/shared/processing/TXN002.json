@@ -1,0 +1,31 @@
+{
+  "message_id": "ff2c09be-1274-4d86-ade8-afa40566e5d2",
+  "timestamp": "2026-03-30T10:59:43.549361+00:00",
+  "source_agent": "fraud_detector",
+  "target_agent": "settlement_processor",
+  "message_type": "transaction",
+  "data": {
+    "transaction_id": "TXN002",
+    "timestamp": "2026-03-16T09:15:00Z",
+    "source_account": "ACC-1002",
+    "destination_account": "ACC-3001",
+    "amount": "25000.00",
+    "currency": "USD",
+    "transaction_type": "wire_transfer",
+    "description": "Equipment purchase",
+    "metadata": {
+      "channel": "branch",
+      "country": "US"
+    },
+    "status": "validated",
+    "validated_at": "2026-03-30T10:59:43.549035+00:00",
+    "source_agent": "fraud_detector",
+    "target_agent": "settlement_processor",
+    "fraud_risk_score": 3,
+    "fraud_risk_level": "MEDIUM",
+    "fraud_triggers": [
+      "amount>10k(+3)"
+    ],
+    "fraud_scored_at": "2026-03-30T10:59:43.549320+00:00"
+  }
+}
