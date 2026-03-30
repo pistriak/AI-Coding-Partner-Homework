@@ -16,10 +16,14 @@ const users = [
  * @param {Object} res - Express response object
  */
 async function getUserById(req, res) {
-  const userId = req.params.id;
+  const rawUserId = req.params.id;
 
-  // BUG: req.params.id returns a string, but users array uses numeric IDs
-  // Strict equality (===) comparison will always fail: "123" !== 123
+  // Accept numeric IDs only to avoid ambiguous parsing (e.g., "123abc").
+  if (!/^\d+$/.test(rawUserId)) {
+    return res.status(400).json({ error: 'Invalid user id format' });
+  }
+
+  const userId = Number(rawUserId);
   const user = users.find(u => u.id === userId);
 
   if (!user) {

@@ -21,11 +21,13 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Demo API server running on http://localhost:${PORT}`);
-  console.log('Try:');
-  console.log(`  GET http://localhost:${PORT}/api/users`);
-  console.log(`  GET http://localhost:${PORT}/api/users/123`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Demo API server running on http://localhost:${PORT}`);
+    console.log('Try:');
+    console.log(`  GET http://localhost:${PORT}/api/users`);
+    console.log(`  GET http://localhost:${PORT}/api/users/123`);
+  });
+}
 
 module.exports = app;
